@@ -7,7 +7,7 @@ from users.models import User
 # Create your models here.
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
 
 class Product(models.Model):
