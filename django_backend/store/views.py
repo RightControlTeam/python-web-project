@@ -2,8 +2,8 @@
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions, filters
-from .models import Category, Product, CartItem
-from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer
+from .models import Category, Product, CartItem, Order, OrderItem
+from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderItemSerializer, OrderSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -48,4 +48,20 @@ class CartItemViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
 
+    permission_classes = [permissions.IsAuthenticated]
+
+    filter_backends = (DjangoFilterBackend)
+    filterset_fields = ['status']
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        else:
+            return Order.objects.filter(user=self.request.user)
+        
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
