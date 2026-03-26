@@ -1,7 +1,7 @@
 #store/serializers.py
 
 from rest_framework import serializers
-from .models import Product, Category, CartItem, Order
+from .models import Product, Category, CartItem, Order, OrderItem
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,15 @@ class CartItemSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Количество товара должно быть больше 0.")
         return value
 
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'quantity', 'price', 'get_total']
+
+
 class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
     class Meta:
         model = Order
-        fields = ['id', 'user', 'total_price', 'created_at']
+        fields = ['id', 'user', 'total_price', 'status', 'created_at', 'updated_at', 'items']
