@@ -73,8 +73,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         cart_items = CartItem.objects.filter(user=request.user)
 
-        if not cart_items:
-           raise ValidationError({"error": "Cart is empty"})
+        if not cart_items.exists():
+           raise ValidationError({"error": "Пустая корзина"})
         
         order = Order.objects.create(
             user=request.user,

@@ -5,8 +5,6 @@ from django.db import models
 from users.models import User
 
 
-# Create your models here.
-
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -72,4 +70,4 @@ class OrderItem(models.Model):
         self.order.recalculate_total_price()
 
     def delete(self, *args, **kwargs):
-        raise Exception("Нельзя удалить товар из заказа")
+        raise PermissionDenied("Нельзя удалить товар из заказа")
