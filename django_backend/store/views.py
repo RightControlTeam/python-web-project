@@ -1,10 +1,11 @@
 # store/views.py
 
+from rest_framework.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
 from .models import Category, Product, CartItem, Order, OrderItem
-from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderItemSerializer, OrderSerializer
+from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -73,7 +74,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         cart_items = CartItem.objects.filter(user=request.user)
 
         if not cart_items:
-           return Response({"error": "Корзина пуста"}, status=status.HTTP_400_BAD_REQUEST)
+           raise ValidationError({"error": "Cart is empty"})
         
         order = Order.objects.create(
             user=request.user,

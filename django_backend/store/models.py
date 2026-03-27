@@ -1,5 +1,6 @@
 #store/models.py
 
+from rest_framework.exceptions import PermissionDenied
 from django.db import models
 from users.models import User
 
@@ -64,7 +65,7 @@ class OrderItem(models.Model):
     
     def save(self, *args, **kwargs):
         if self.id:
-            raise Exception("Нельзя изменить товар в заказе после его создания")
+            raise PermissionDenied("Нельзя изменить товар в заказе после его создания")
         
         super().save(*args, **kwargs)
 
