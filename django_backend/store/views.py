@@ -1,7 +1,8 @@
 # store/views.py
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, filters
+from rest_framework.response import Response
+from rest_framework import viewsets, permissions, filters, status
 from .models import Category, Product, CartItem, Order, OrderItem
 from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderItemSerializer, OrderSerializer
 
@@ -54,7 +55,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    filter_backends = (DjangoFilterBackend)
+    filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']
 
     def get_queryset(self):
@@ -65,3 +66,29 @@ class OrderViewSet(viewsets.ModelViewSet):
         
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        """Создание заказа из корзины. При создании удаляет нужные товары из корзины"""
+
+        cart_items = CartItem.objects.filter(user=request.user)
+
+        if not cart_items:
+           return Response({"error": "Корзина пуста"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order = Order.objects.create(
+            user=request.user,
+            status=Order.STATUS_PENDING
+        )
+        
+        for cart_item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                price = cart_item.product.price
+            )
+        
+        cart_items.delete()
+
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
