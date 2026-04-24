@@ -82,8 +82,9 @@ DATABASES = {
         'NAME': 'shop_db',           # Имя твоей базы данных (из шага 3)
         'USER': 'postgres',           # Имя пользователя (обычно 'postgres')
         'PASSWORD': 'helloworld',    # Пароль, который ты вводил при установке
-        'HOST': 'localhost',           # Сервер базы данных (localhost, т.к. у тебя на компьютере)
-        'PORT': '5432',                # Порт по умолчанию для PostgreSQL
+#        'HOST': 'localhost',           # Сервер базы данных (localhost, т.к. у тебя на компьютере)
+        'HOST': '127.0.0.1',  # ЗАМЕНИ localhost на 127.0.0.1
+        'PORT': '1408',                # Порт по умолчанию для PostgreSQL
     }
 }
 

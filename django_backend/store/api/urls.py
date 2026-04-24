@@ -1,7 +1,6 @@
-# store/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet, ProductViewSet, CartItemViewSet, OrderViewSet
+from store.api.views import CategoryViewSet, ProductViewSet, CartItemViewSet, OrderViewSet
 
 router = DefaultRouter()
 

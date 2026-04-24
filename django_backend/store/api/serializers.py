@@ -1,7 +1,5 @@
-#store/serializers.py
-
 from rest_framework import serializers
-from .models import Product, Category, CartItem, Order, OrderItem
+from store.models import Product, Category, CartItem, Order, OrderItem
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

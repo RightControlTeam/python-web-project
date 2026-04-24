@@ -47,7 +47,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def recalculate_total_price(self):
-        """Пересчитать сумму только при создании!"""
+        """Пересчитать сумму только при создании"""
         self.total_price = sum(i.get_total() for i in self.items.all())
         super().save(update_fields=['total_price'])
 

@@ -1,11 +1,11 @@
-# store/views.py
-
 from rest_framework.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
-from .models import Category, Product, CartItem, Order, OrderItem
-from .serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
+
+from store.models import Category, Product, CartItem, Order
+from store.api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
+from store.services.order_service import OrderService
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -69,27 +69,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        """Создание заказа из корзины. При создании удаляет нужные товары из корзины"""
-
-        cart_items = CartItem.objects.filter(user=request.user)
-
-        if not cart_items.exists():
-           raise ValidationError({"error": "Пустая корзина"})
-        
-        order = Order.objects.create(
-            user=request.user,
-            status=Order.STATUS_PENDING
-        )
-        
-        for cart_item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=cart_item.product,
-                quantity=cart_item.quantity,
-                price = cart_item.product.price
-            )
-        
-        cart_items.delete()
-
-        serializer = self.get_serializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            order = OrderService.create_order(request.user)
+            serializer = self.get_serializer(order)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            raise e
