@@ -1,4 +1,14 @@
-from store.domain.exceptions import ProductNotFound
+from decimal import Decimal
+from django.db import transaction
+
+from store.domain.exceptions import (
+    ProductNotFound,
+    ProductAlreadyExists,
+    ProductInvalidName,
+    ProductInvalidPrice,
+    ProductInvalidStock,
+    ProductCategoryNotFound
+)
 from store.models import Product
 from typing import Optional
 
@@ -30,3 +40,15 @@ class ProductService:
         queryset = queryset.order_by("id", "name")
 
         return  list(queryset[offset : offset + page_length])
+
+    @staticmethod
+    @transaction.atomic
+    def create_product(
+        name: str,
+        price: Decimal,
+        category_id: int,
+        stock: int = 0
+    ) -> Product:
+        pass
+        # todo
+
