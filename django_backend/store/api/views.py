@@ -6,6 +6,7 @@ from rest_framework import viewsets, permissions, filters, status
 from store.models import Category, Product, CartItem, Order
 from store.api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
 from store.services.order_service import OrderService
+from store.services.product_service import ProductService
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
