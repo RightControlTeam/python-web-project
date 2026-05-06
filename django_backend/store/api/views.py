@@ -2,12 +2,20 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
 
-from store.domain.exceptions import ProductNotFound
 from store.models import Category, Product, CartItem, Order
 from store.api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
 from store.services.order_service import OrderService
 from store.services.product_service import ProductService
 
+
+from store.domain.exceptions import (
+    ProductNotFound,
+    ProductAlreadyExists,
+    ProductInvalidName,
+    ProductInvalidPrice,
+    ProductInvalidStock,
+    ProductCategoryNotFound
+)
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -64,6 +72,30 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(products, many=True)
         return Response(serializer.data)
+
+
+    #i hate django...
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        try:
+            new_product = ProductService.create_product(
+                name = data.get('name'),
+                price = data.get('price'),
+                category_id = data.get('category').id,
+                stock = data.get('stock', 0)
+            )
+            response_serializer = self.get_serializer(new_product)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        except (ProductInvalidName, ProductInvalidPrice, ProductInvalidStock) as e:
+            return Response({"error": "INVALID_DATA", "detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ProductAlreadyExists as e:
+            return Response({"error": "PRODUCT_ALREADY_EXISTS", "detail": str(e)}, status=status.HTTP_409_CONFLICT)
+        except ProductCategoryNotFound as e:
+            return Response({"error": "CATEGORY_NOT_FOUND", "detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
