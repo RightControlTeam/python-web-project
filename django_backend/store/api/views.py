@@ -1,8 +1,8 @@
-from rest_framework.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
 
+from store.domain.exceptions import ProductNotFound
 from store.models import Category, Product, CartItem, Order
 from store.api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
 from store.services.order_service import OrderService
@@ -23,9 +23,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_fields = ['category']
-    search_fields = ['name']
+    http_method_names = ['get', 'post', 'delete', 'put', 'patch']
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     def get_permissions(self):
@@ -35,7 +33,37 @@ class ProductViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAdminUser]
         return [permission() for permission in permission_classes]
 
-    http_method_names = ['get', 'post', 'delete', 'put', 'patch']
+    def retrieve(self, request, *args, **kwargs):
+        """/api/product/{id}"""
+        try:
+            found_product = ProductService.get_product_by_id(kwargs['pk'])
+            serializer = self.get_serializer(found_product)
+            return Response(serializer.data)
+        except ProductNotFound as e:
+            return Response(
+                {"error": "PRODUCT_NOT_FOUND", "detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def list(self, request, *args, **kwargs):
+        """/api/product/"""
+        category_id = request.query_params.get('category_id')
+        search = request.query_params.get('search')
+        offset = int(request.query_params.get('offset', 0))
+        page_length = int(request.query_params.get('page_length', 20))
+
+        if category_id:
+            category_id = int(category_id)
+
+        products = ProductService.get_products(
+            category_id=category_id,
+            search=search,
+            offset=offset,
+            page_length=page_length
+        )
+
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data)
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
