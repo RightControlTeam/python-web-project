@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from django.db import transaction
 
 from store.domain.exceptions import (
@@ -9,7 +10,7 @@ from store.domain.exceptions import (
     ProductInvalidStock,
     ProductCategoryNotFound
 )
-from store.models import Product
+from store.models import Product, Category
 from typing import Optional
 
 class ProductService:
@@ -49,6 +50,35 @@ class ProductService:
         category_id: int,
         stock: int = 0
     ) -> Product:
-        pass
-        # todo
+
+        if not name:
+            raise ProductInvalidName("Product name cannot be empty")
+
+        if price <= 0:
+            raise ProductInvalidPrice("Product price must be greater than 0")
+
+        if stock < 0:
+            raise ProductInvalidStock("Product stock cannot be negative")
+
+        if Product.objects.filter(name = name).exists():
+            raise ProductAlreadyExists(f"Product with name {name} already exists")
+
+        if not Category.objects.filter(id = category_id).exists():
+            raise ProductCategoryNotFound(f"Category with id {category_id} does not exist")
+
+
+        product = Product.objects.create(
+            name = name,
+            price = price,
+            category_id = category_id,
+            stock = stock,
+        )
+
+        return product
+
+
+
+
+
+
 
