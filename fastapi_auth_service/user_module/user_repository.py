@@ -10,10 +10,18 @@ class UserRepository:
         result = await db.execute(query)
         return result.scalar_one_or_none()
 
+
+    async def get_by_username(self, db: AsyncSession, username: str) -> Optional[User]:
+        query = select(User).where(User.username == username)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
+
+
     async def get_range(self, db: AsyncSession, offset: int = 0, limit: int = 10) -> list[User]:
         query = select(User).offset(offset).limit(limit)
         result = await db.execute(query)
         return list(result.scalars().all())
+
 
     async def create(self, db: AsyncSession, new_user: User) -> User:
         db.add(new_user)
