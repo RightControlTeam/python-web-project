@@ -8,12 +8,11 @@ from store.services.order_service import OrderService
 from store.services.product_service import ProductService
 
 
+
 from store.domain.exceptions import (
     ProductNotFound,
+    ProductValidationError,
     ProductAlreadyExists,
-    ProductInvalidName,
-    ProductInvalidPrice,
-    ProductInvalidStock,
     ProductCategoryNotFound
 )
 
@@ -30,10 +29,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'put', 'patch']
 
 
-class ProductViewSet(viewsets.ModelViewSet):
-    http_method_names = ['get', 'post', 'delete', 'put', 'patch']
+class ProductViewSet(viewsets.GenericViewSet):
+
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             permission_classes = [permissions.AllowAny]
@@ -41,11 +41,12 @@ class ProductViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAdminUser]
         return [permission() for permission in permission_classes]
 
-    def retrieve(self, request, *args, **kwargs):
-        """/api/product/{id}"""
+
+    def retrieve(self, request, pk = None):
+        """GET /api/product/{id}"""
         try:
-            found_product = ProductService.get_product_by_id(kwargs['pk'])
-            serializer = self.get_serializer(found_product)
+            product = ProductService.get_product_by_id(pk)
+            serializer = self.get_serializer(product)
             return Response(serializer.data)
         except ProductNotFound as e:
             return Response(
@@ -53,8 +54,9 @@ class ProductViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-    def list(self, request, *args, **kwargs):
-        """/api/product/"""
+
+    def list(self, request):
+        """GET /api/product/"""
         category_id = request.query_params.get('category_id')
         search = request.query_params.get('search')
         offset = int(request.query_params.get('offset', 0))
@@ -74,8 +76,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-    #i hate django...
-    def create(self, request, *args, **kwargs):
+    def create(self, request):
+        """POST /api/product/"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -90,12 +92,72 @@ class ProductViewSet(viewsets.ModelViewSet):
             )
             response_serializer = self.get_serializer(new_product)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-        except (ProductInvalidName, ProductInvalidPrice, ProductInvalidStock) as e:
-            return Response({"error": "INVALID_DATA", "detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ProductValidationError as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except ProductAlreadyExists as e:
-            return Response({"error": "PRODUCT_ALREADY_EXISTS", "detail": str(e)}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_409_CONFLICT
+            )
         except ProductCategoryNotFound as e:
-            return Response({"error": "CATEGORY_NOT_FOUND", "detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+    def destroy(self, request, pk = None):
+        """DELETE /api/product/{id}"""
+        try:
+            ProductService.delete_product(pk)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProductNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def update(self, request, pk = None):
+        """PUT /api/product/{id}"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            updated_product = ProductService.update_product(
+                pk=pk,
+                name=data.get('name'),
+                price=data.get('price'),
+                category_id=data.get('category').id if data.get('category') else None,
+                stock=data.get('stock')
+            )
+            response_serializer = self.get_serializer(updated_product)
+            return Response(response_serializer.data)
+
+        except ProductNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except ProductValidationError as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except ProductAlreadyExists as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_409_CONFLICT
+            )
+        except ProductCategoryNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
