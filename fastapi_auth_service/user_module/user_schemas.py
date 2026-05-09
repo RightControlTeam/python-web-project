@@ -7,3 +7,11 @@ class UserRequest(BaseModel):
 class UserResponse(BaseModel):
     id: int
     username: str
+
+class OrderCancelNotification(BaseModel):
+    username: str
+    order_id: int
+
+class CartNotification(BaseModel):
+    username: str
+    product_name: str
