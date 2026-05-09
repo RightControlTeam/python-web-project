@@ -1,7 +1,4 @@
-import logging
-
-logger = logging.getLogger("notifications")
-logging.basicConfig(level=logging.INFO, filename="fastapi_notifications.log")
+from core.logger import logger
 
 def send_registration_email(username: str):
     logger.info(f" Письмо отправлено Привет, {username}! Добро пожаловать в наш магазин ")

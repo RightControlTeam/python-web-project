@@ -1,4 +1,7 @@
+from urllib import response
+
 import httpx
+import logging
 from asgiref.sync import sync_to_async
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,7 +13,7 @@ from store.api.serializers import CategorySerializer, ProductSerializer, CartIte
 from store.services.order_service import OrderService
 from store.services.product_service import ProductService
 
-
+logger = logging.getLogger(__name__)
 
 from store.domain.exceptions import (
     ProductNotFound,
@@ -181,25 +184,29 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
 
 async def add_to_cart_view(request, product_id):
-    cart_item, product = await sync_to_async(CartService.add_product_to_cart)(
-        user=request.user,
-        product_id=product_id
-    )
+    try:
+        cart_item, product = await sync_to_async(CartService.add_product_to_cart)(
+            user=request.user,
+            product_id=product_id
+        )
 
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(
-                "http://localhost:8000/users/internal/notify-cart/",
-                json={
-                    "username": request.user.username,
-                    "product_name": product.name
-                }
-            )
-        except httpx.RequestError:
-            pass
+        async with httpx.AsyncClient() as client:
+            try:
+                await client.post(
+                    "http://localhost:8000/users/internal/notify-cart/",
+                    json={
+                        "username": request.user.username,
+                        "product_name": product.name
+                    }
+                )
+                logger.info(f"Уведомление о корзине отправлено")
+            except httpx.RequestError as e:
+                logger.error(f"Ошибка HTTP при уведомлении FastAPI {e}")
 
-    return JsonResponse({"status": "success"})
-
+        return JsonResponse({"status": "success"})
+    except Exception as ex:
+        logger.error(f"Ошибка в add_to_cart: {ex}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -238,12 +245,15 @@ async def cancel_order_view(request, order_id):
                     "http://localhost:8000/users/internal/notify-cancel-order/",
                     json={"username": request.user.username, "order_id": order_id}
                 )
-            except httpx.RequestError:
-                pass
+                logger.info(f"Запрос на отмену заказа {order_id} передан в FastAPI")
+            except httpx.RequestError as ex:
+                logger.error(f"Не удалось отправить уведомление об отмене заказа {order_id} в FastAPI {ex}")
 
         return JsonResponse({"status": "success", "message": f"Заказ {order_id} отменен"})
 
     except OrderNotFound as e:
+        logger.warning(f"Попытка отмены несуществующего заказа {order_id}")
         return JsonResponse({"error": "NOT_FOUND", "detail": str(e)}, status=404)
     except OrderCancellationError as e:
+        logger.warning(f"Ошибка при отмене заказа {order_id}: {str(e)}")
         return JsonResponse({"error": "CANCELLATION_RESTRICTED", "detail": str(e)}, status=400)

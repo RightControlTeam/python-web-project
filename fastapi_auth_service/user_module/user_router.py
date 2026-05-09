@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from core.logger import logger
 from user_module.user_repository import UserRepository
 from user_module.user_service import UserService
 from user_module.user_schemas import UserRequest, UserResponse
@@ -31,6 +31,7 @@ async def create_user(
     service: UserService = Depends(get_user_service)
 ):
     user = await service.create(db, request)
+    logger.info(f" Создан новый пользователь: {user.username}")
     background_tasks.add_task(send_registration_email, user.username)
 
     return user
@@ -68,9 +69,11 @@ async def login(
     service: UserService = Depends(get_user_service)
 ):
     response = await service.login(db, request)
+    logger.info(f" Пользователь {request.username} вошел в систему")
     background_tasks.add_task(send_security_alert, request.username)
 
     return response
+
 
 @user_router.get("/me/", response_model=UserResponse)
 async def get_my_profile(
@@ -78,13 +81,16 @@ async def get_my_profile(
     db: AsyncSession = Depends(get_async_session),
     service: UserService = Depends(get_user_service)
 ):
+    logger.info(f"Пользователь ID {current_user.sub} получает данные профиля")
     return await service.get_by_id(db, int(current_user.sub))
+
 
 @user_router.post("/internal/notify-cart/")
 async def notify_cart_addition(
     data: CartNotification,
     background_tasks: BackgroundTasks
 ):
+    logger.info(f"Добавлен новый товар {data.product_name} в корзину  пользователя {data.username}")
     background_tasks.add_task(send_cart_notification, data.username, data.product_name)
     return {"status": "notification_queued"}
 
@@ -94,5 +100,6 @@ async def notify_order_cancel(
     data: OrderCancelNotification,
     background_tasks: BackgroundTasks
 ):
+    logger.info(f"Отмену заказа №{data.order_id} для {data.username}")
     background_tasks.add_task(send_order_cancel, data.username, data.order_id)
     return {"status": "ok"}
