@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from user_module.user_repository import UserRepository
 from user_module.user_service import UserService
 from user_module.user_schemas import UserRequest, UserResponse
+from security.login_schemas import LoginRequest, LoginResponse
 from core.database import get_async_session
 
 user_router = APIRouter(prefix="/users", tags=["users"])
@@ -48,4 +49,15 @@ async def get_range(
     service: UserService = Depends(get_user_service)
 ):
     return await service.get_range(db, offset, limit)
+
+@user_router.get(
+    path="login",
+    response_model=LoginResponse
+)
+async def login(
+    request: LoginRequest,
+    db: AsyncSession = Depends(get_async_session),
+    service: UserService = Depends(get_user_service)
+):
+    return await service.login(db, request)
 
