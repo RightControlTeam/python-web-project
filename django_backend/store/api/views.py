@@ -1,3 +1,6 @@
+import httpx
+from asgiref.sync import sync_to_async
+from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
@@ -15,6 +18,10 @@ from store.domain.exceptions import (
     ProductAlreadyExists,
     ProductCategoryNotFound
 )
+
+from django_backend.store.domain.exceptions import OrderNotFound, OrderCancellationError
+from django_backend.store.services.cart_service import CartService
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -173,6 +180,27 @@ class CartItemViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
+async def add_to_cart_view(request, product_id):
+    cart_item, product = await sync_to_async(CartService.add_product_to_cart)(
+        user=request.user,
+        product_id=product_id
+    )
+
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(
+                "http://localhost:8000/users/internal/notify-cart/",
+                json={
+                    "username": request.user.username,
+                    "product_name": product.name
+                }
+            )
+        except httpx.RequestError:
+            pass
+
+    return JsonResponse({"status": "success"})
+
+
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -198,3 +226,24 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             raise e
+
+
+async def cancel_order_view(request, order_id):
+    try:
+        order = await sync_to_async(OrderService.cancel_order)(order_id)
+
+        async with httpx.AsyncClient() as client:
+            try:
+                await client.post(
+                    "http://localhost:8000/users/internal/notify-cancel-order/",
+                    json={"username": request.user.username, "order_id": order_id}
+                )
+            except httpx.RequestError:
+                pass
+
+        return JsonResponse({"status": "success", "message": f"Заказ {order_id} отменен"})
+
+    except OrderNotFound as e:
+        return JsonResponse({"error": "NOT_FOUND", "detail": str(e)}, status=404)
+    except OrderCancellationError as e:
+        return JsonResponse({"error": "CANCELLATION_RESTRICTED", "detail": str(e)}, status=400)
