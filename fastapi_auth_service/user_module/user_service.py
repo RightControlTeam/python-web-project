@@ -3,6 +3,9 @@ from fastapi import HTTPException, status
 
 from user_module.user_repository import UserRepository
 from user_module.user_schemas import UserRequest, UserResponse
+from security.login_schemas import LoginRequest, LoginResponse
+from security.password_hashing import verify_password
+from security.token import generate_login_response
 from user_module.user import User
 from user_module.user_mapper import user_to_response, user_from_request
 
@@ -31,7 +34,20 @@ class UserService:
             )
         return user_to_response(user)
 
-
     async def get_range(self, db: AsyncSession, offset: int = 0, limit: int = 10) -> list[UserResponse]:
         users: list[User] = await self.repository.get_range(db, offset, limit)
         return [user_to_response(i) for i in users]
+
+    async def login(self, db: AsyncSession, request: LoginRequest) -> LoginResponse:
+        user: User = await self.repository.get_by_username(db, request.username)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with username {request.username} does not exist"
+            )
+        if not verify_password(request.password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Incorrect password"
+            )
+        return generate_login_response(user.id)
