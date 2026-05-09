@@ -1,10 +1,14 @@
+#region product exceptions
+
 class EmptyCartError(Exception):
-    """Ошибка: попытка оформить заказ с пустой корзиной"""
     pass
 
+class OrderNotFound(Exception):
+    pass
 
+class OrderCancellationError(Exception):
+    pass
 
-#region product exceptions
 class ProductNotFound(Exception):
     pass
 
