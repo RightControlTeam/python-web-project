@@ -50,10 +50,7 @@ async def get_range(
 ):
     return await service.get_range(db, offset, limit)
 
-@user_router.get(
-    path="login",
-    response_model=LoginResponse
-)
+@user_router.post(path="/login/")
 async def login(
     request: LoginRequest,
     db: AsyncSession = Depends(get_async_session),
