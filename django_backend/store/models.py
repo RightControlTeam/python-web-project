@@ -60,6 +60,8 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def get_total(self):
+        if self.quantity is None or self.price is None:
+            return 0
         return self.quantity * self.price
     
     def save(self, *args, **kwargs):
