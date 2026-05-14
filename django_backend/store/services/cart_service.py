@@ -1,7 +1,8 @@
+from django.db import transaction
 from store.models import CartItem, Product
 from django.db.models import F
-
-from django_backend.store.domain.exceptions import ProductNotFound
+from users.models import User
+from store.domain.exceptions import ProductNotFound, CartItemNotFound, CartValidationError
 
 
 class CartService:
@@ -21,3 +22,28 @@ class CartService:
             cart_item.save()
 
         return cart_item, product
+
+
+    @staticmethod
+    @transaction.atomic
+    def delete_product_from_cart(user: User, product_id: int):
+        if not user:
+            raise CartValidationError("Field user is required")
+
+        if not product_id:
+            raise CartValidationError("Field product_id is required")
+
+        if product_id <= 0:
+            raise CartValidationError("Product id must be greater than 0")
+
+        product = Product.objects.filter(id=product_id).first()
+
+        if not product:
+            raise ProductNotFound(f"Product with id {product_id} does not exist")
+
+        cart_item = CartItem.objects.select_for_update().filter(product_id=product_id, user=user).first()
+
+        if not cart_item:
+            raise CartItemNotFound(f"Product with id {product_id} is not in the cart")
+
+        cart_item.delete()

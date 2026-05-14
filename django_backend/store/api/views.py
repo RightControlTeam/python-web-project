@@ -19,8 +19,8 @@ from store.domain.exceptions import (
     ProductCategoryNotFound
 )
 
-from django_backend.store.domain.exceptions import OrderNotFound, OrderCancellationError
-from django_backend.store.services.cart_service import CartService
+from store.domain.exceptions import OrderNotFound, OrderCancellationError, CartItemNotFound, CartValidationError
+from store.services.cart_service import CartService
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -178,6 +178,36 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def destroy(self, request, pk=None):
+        """DELETE /api/сart/{id}"""
+        item = CartItem.objects.filter(pk=pk, user=request.user).first()
+        if item is None:
+            return Response(
+                data={"detail": f"Cart item with id {pk} not found for this user"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        product_id = item.product.id
+        try:
+            CartService.delete_product_from_cart(user=request.user, product_id=product_id)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except ProductNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except CartItemNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except CartValidationError as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 
 async def add_to_cart_view(request, product_id):

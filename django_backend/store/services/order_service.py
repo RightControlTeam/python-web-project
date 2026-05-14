@@ -3,7 +3,7 @@ from django.db import transaction
 from store.domain.exceptions import EmptyCartError
 from store.models import CartItem, Order, OrderItem
 
-from django_backend.store.domain.exceptions import OrderNotFound, OrderCancellationError
+from store.domain.exceptions import OrderNotFound, OrderCancellationError
 
 
 class OrderService:

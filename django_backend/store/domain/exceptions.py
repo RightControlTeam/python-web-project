@@ -20,4 +20,10 @@ class ProductValidationError(Exception):
 
 class ProductCategoryNotFound(Exception):
     pass
+
+class CartItemNotFound(Exception):
+    pass
+
+class CartValidationError(Exception):
+    pass
 #endregion
