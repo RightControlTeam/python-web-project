@@ -1,7 +1,7 @@
-from django.db import transaction
 from store.models import CartItem, Product
-from django.db.models import F
 from users.models import User
+from django.db import transaction
+from django.db.models import F
 from store.domain.exceptions import ProductNotFound, CartItemNotFound, CartValidationError
 
 
@@ -22,7 +22,6 @@ class CartService:
             cart_item.save()
 
         return cart_item, product
-
 
     @staticmethod
     @transaction.atomic
