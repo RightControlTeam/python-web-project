@@ -14,7 +14,7 @@ class ReviewRepository:
         return Review.query.get(review_id)
 
     @staticmethod
-    def find_by_product_id(product_id: str) -> List[Review]:
+    def find_by_product_id(product_id: int) -> List[Review]:
         return Review.query.filter_by(product_id=product_id).all()
 
     @staticmethod
