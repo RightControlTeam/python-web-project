@@ -186,6 +186,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
         """DELETE /api/сart/{id}"""
         item = CartItem.objects.filter(pk=pk, user=request.user).first()
         if item is None:
+            logger.warning(f"Пользователь попытался удалить несуществующий CartItem")
             return Response(
                 data={"detail": f"Cart item with id {pk} not found for this user"},
                 status=status.HTTP_404_NOT_FOUND
@@ -194,6 +195,49 @@ class CartItemViewSet(viewsets.ModelViewSet):
         try:
             CartService.delete_product_from_cart(user=request.user, product_id=product_id)
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except ProductNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except CartItemNotFound as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except CartValidationError as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def update(self, request, pk=None):
+        """PUT /api/cart/{id}"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        item = CartItem.objects.filter(pk=pk, user=request.user).first()
+        if item is None:
+            logger.warning(f"Пользователь попытался удалить несуществующий CartItem")
+            return Response(
+                data={"detail": f"Cart item with id {pk} not found for this user"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        product_id = item.product.id
+        quantity = data.get('quantity')
+        if quantity is None:
+            return Response(
+                {"detail": "Field 'quantity' is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            updated_cart_item = CartService.update_product_quantity(
+                user=request.user,
+                product_id=product_id,
+                quantity=quantity)
+            response_serializer = self.get_serializer(updated_cart_item)
+            return Response(response_serializer.data)
 
         except ProductNotFound as e:
             return Response(
@@ -236,7 +280,7 @@ async def add_to_cart_view(request, product_id):
         return JsonResponse({"status": "success"})
     except Exception as ex:
         logger.error(f"Ошибка в add_to_cart: {ex}")
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"status": "error", "message": str(ex)}, status=500)
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
