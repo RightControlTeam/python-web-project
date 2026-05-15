@@ -8,10 +8,10 @@ from security.login_schemas import LoginRequest, LoginResponse
 from core.database import get_async_session
 from security.dependencies import get_current_user
 
-from fastapi_auth_service.security.login_schemas import TokenClaims
-from fastapi_auth_service.user_module.notifications import send_registration_email, send_security_alert, \
+from security.login_schemas import TokenClaims
+from user_module.notifications import send_registration_email, send_security_alert, \
     send_cart_notification, send_order_cancel
-from fastapi_auth_service.user_module.user_schemas import OrderCancelNotification, CartNotification
+from user_module.user_schemas import OrderCancelNotification, CartNotification
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 
