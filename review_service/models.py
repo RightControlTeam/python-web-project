@@ -15,7 +15,7 @@ class Review(db.Model):
 
     created_at = db.Column(db.DateTime, nullable=False, default= lambda: datetime.now(timezone.utc))
 
-    is_deleted = db.Column(db.Boolean, nullable=False, default=False)
+    status = db.Column(db.String(20), nullable=False, default='active')
 
     def __repr__(self):
         return f'<Review from user {self.user_id} for product {self.product_id}>'
