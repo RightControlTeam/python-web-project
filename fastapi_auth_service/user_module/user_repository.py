@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from user_module.user import User
 from typing import Optional
 
+from user_module.user_schemas import UserUpdateRequest
+
 
 class UserRepository:
     async def get_by_id(self, db: AsyncSession, user_id: int) -> Optional[User]:
@@ -28,4 +30,19 @@ class UserRepository:
         await db.commit()
         await db.refresh(new_user)
         return new_user
+
+    async def delete(self, db: AsyncSession, user_id: int):
+        user = await self.get_by_id(db, user_id)
+        if not user:
+            return False
+
+        await db.delete(user)
+        await db.commit()
+        return True
+
+    async def update(self, db: AsyncSession, user: User):
+        updated_user = await db.merge(user)
+        await db.commit()
+        await db.refresh(updated_user)
+        return updated_user
 
