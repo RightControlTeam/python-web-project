@@ -21,8 +21,19 @@ class ReviewService:
                 return False
 
     @staticmethod
+    async def verify_user_exists(user_id: int) -> bool:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(f"http://localhost:8001/users/{user_id}/", timeout=5)
+                return response.status_code == 200
+        except httpx.RequestError:
+            return False
+
+    @staticmethod
     async def create(data, user_id: int) -> Optional[Review]:
         if not await ReviewService.verify_product_exists(data.product_id):
+            return None
+        if not await ReviewService.verify_user_exists(user_id):
             return None
 
         new_review = Review(
