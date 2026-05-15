@@ -8,5 +8,8 @@ dependencies = [
     "django>=6.0.3",
     "django-filter>=25.2",
     "djangorestframework>=3.17.1",
+    "httpx>=0.28.1",
     "psycopg2-binary>=2.9.11",
+    "python-dotenv>=1.2.2",
+    "transaction>=5.1",
 ]

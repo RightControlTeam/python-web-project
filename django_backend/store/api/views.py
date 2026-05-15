@@ -5,6 +5,7 @@ import logging
 from asgiref.sync import sync_to_async
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
 
@@ -252,6 +253,35 @@ class CartItemViewSet(viewsets.ModelViewSet):
         except CartValidationError as e:
             return Response(
                 data={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['delete'])
+    def clear(self, request):
+        try:
+            deleted_cnt = CartService.clear_cart(user=request.user)
+            return Response(
+                {"deleted_count": deleted_cnt},
+                status=status.HTTP_200_OK
+            )
+        except CartValidationError as e:
+            return Response(
+                data={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['get'])
+    def total(self, request):
+        """GET /api/cart/total/"""
+        try:
+            total = CartService.get_total_price(user=request.user)
+            return Response(
+                {"total_price": total},
+                status=status.HTTP_200_OK
+            )
+        except CartValidationError as e:
+            return Response(
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

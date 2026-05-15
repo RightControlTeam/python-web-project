@@ -1,7 +1,7 @@
 from store.models import CartItem, Product
 from users.models import User
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from store.domain.exceptions import ProductNotFound, CartItemNotFound, CartValidationError
 import logging
 
@@ -90,3 +90,27 @@ class CartService:
             cart_item.save()
             logger.info("Пользователь успешно обновил товар")
         return cart_item
+
+    @staticmethod
+    @transaction.atomic
+    def clear_cart(user: User):
+        if not user:
+            logger.error("User is none")
+            raise CartValidationError("Field user is required")
+        cnt, _ = CartItem.objects.filter(user=user).delete()
+        if cnt == 0:
+            logger.warning(f"User {user.id} tried to clear empty cart")
+        else:
+            logger.info(f"Cart cleared successfully, deleted {cnt} items")
+        return cnt
+
+    @staticmethod
+    def get_total_price(user: User):
+        if not user:
+            logger.error("User is none")
+            raise CartValidationError("Field user is required")
+        result = CartItem.objects.filter(user=user).aggregate(
+            total=Sum(F('quantity') * F('product__price'))
+        )
+        total = result['total'] or 0
+        return total
