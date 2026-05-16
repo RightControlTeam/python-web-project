@@ -30,17 +30,17 @@ class ReviewService:
             return False
 
     @staticmethod
-    async def create(data, user_id: int) -> Optional[Review]:
-        if not await ReviewService.verify_product_exists(data.product_id):
+    async def create(request: ReviewCreateRequest, user_id: int) -> Optional[Review]:
+        if not await ReviewService.verify_product_exists(request.product_id):
             return None
         if not await ReviewService.verify_user_exists(user_id):
             return None
 
         new_review = Review(
-            product_id=data.product_id,
+            product_id=request.product_id,
             user_id=user_id,
-            text=data.text,
-            rating=data.rating,
+            text=request.text,
+            rating=request.rating,
             status='active'
         )
         return ReviewRepository.create(new_review)
@@ -58,13 +58,13 @@ class ReviewService:
         return Review.query.filter_by(user_id=user_id).all()
 
     @staticmethod
-    def update_review(data, review_id: int, user_id: int) -> Optional[Review]:
+    def update_review(request: ReviewUpdateRequest, review_id: int, user_id: int) -> Optional[Review]:
         review = Review.query.get(review_id)
         if not review or review.user_id != user_id or review.status == 'deleted':
             return None
 
-        review.text = data.text
-        review.rating = data.rating
+        review.text = request.text
+        review.rating = request.rating
         db.session.commit()
 
         return review
