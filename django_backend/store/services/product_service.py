@@ -3,8 +3,8 @@ from typing import Optional
 from django.db import transaction
 import logging
 
-from store.models import Product, Category
-from store.domain.exceptions import (
+from django_backend.store.models import Product, Category
+from django_backend.store.domain.exceptions import (
     ProductNotFound,
     ProductAlreadyExists,
     ProductValidationError,
