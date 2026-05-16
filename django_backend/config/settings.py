@@ -84,12 +84,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 db_url = urlparse(settings.DJANGO_DATABASE_URL)
 
-print("DEBUG DATABASE PARSING:")
-print(f"NAME: '{db_url.path.lstrip('/')}'")
-print(f"USER: '{db_url.username}'")
-print(f"PASSWORD: '{db_url.password}'")
-print(f"HOST: '{db_url.hostname}'")
-print(f"PORT: '{db_url.port}'")
 
 DATABASES = {
     'default': {
