@@ -13,6 +13,8 @@ from user_module.notifications import send_registration_email, send_security_ale
     send_cart_notification, send_order_cancel
 from user_module.user_schemas import OrderCancelNotification, CartNotification
 
+from fastapi_auth_service.user_module.user_schemas import UserUpdateRequest
+
 user_router = APIRouter(prefix="/users", tags=["users"])
 
 async def get_user_service() -> UserService:
@@ -103,3 +105,25 @@ async def notify_order_cancel(
     logger.info(f"Отмену заказа №{data.order_id} для {data.username}")
     background_tasks.add_task(send_order_cancel, data.username, data.order_id)
     return {"status": "ok"}
+
+@user_router.delete(path="/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+        current_user: TokenClaims = Depends(get_current_user),
+        db: AsyncSession = Depends(get_async_session),
+        service: UserService = Depends(get_user_service),
+):
+    user_id = int(current_user.sub)
+    await service.delete(db, user_id)
+    logger.info(f" Пользователь удалён")
+
+@user_router.put(path="/")
+async def update_user(
+    request: UserUpdateRequest,
+    current_user: TokenClaims = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+    service: UserService = Depends(get_user_service),
+):
+    user_id = int(current_user.sub)
+    updated_user = await service.update(db, request, user_id)
+    logger.info("Данные обновлены")
+    return updated_user
