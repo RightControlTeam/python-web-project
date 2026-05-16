@@ -1,14 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from user_module.user_repository import UserRepository
-from user_module.user_schemas import UserRequest, UserResponse, UserUpdateRequest
-from security.login_schemas import LoginRequest, LoginResponse
-from security.password_hashing import verify_password
-from security.token import generate_login_response
-from user_module.user import User
-from user_module.user_mapper import user_to_response, user_from_request
-from security.password_hashing import hash_password
+from .user_repository import UserRepository
+from .user_schemas import UserRequest, UserResponse, UserUpdateRequest
+from ..security.login_schemas import LoginRequest, LoginResponse
+from ..security.password_hashing import verify_password
+from ..security.token import generate_login_response
+from .user import User
+from user_mapper import user_to_response, user_from_request
+from ..security.password_hashing import hash_password
 
 
 class UserService:

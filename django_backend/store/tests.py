@@ -1,9 +1,9 @@
 
 from django.test import TestCase
-from users.models import User
-from store.models import Category, Product, CartItem
-from store.services.order_service import OrderService
-from store.domain.exceptions import EmptyCartError
+from ..users.models import User
+from .models import Category, Product, CartItem
+from .services.order_service import OrderService
+from .domain.exceptions import EmptyCartError
 
 
 class OrderServiceTest(TestCase):

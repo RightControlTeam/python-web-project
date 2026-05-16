@@ -9,22 +9,22 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, filters, status
 
-from store.models import Category, Product, CartItem, Order
-from store.api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
-from store.services.order_service import OrderService
-from store.services.product_service import ProductService
+from ..models import Category, Product, CartItem, Order
+from ..api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
+from ..services.order_service import OrderService
+from ..services.product_service import ProductService
 
 logger = logging.getLogger(__name__)
 
-from store.domain.exceptions import (
+from ..domain.exceptions import (
     ProductNotFound,
     ProductValidationError,
     ProductAlreadyExists,
     ProductCategoryNotFound
 )
 
-from store.domain.exceptions import OrderNotFound, OrderCancellationError, CartItemNotFound, CartValidationError
-from store.services.cart_service import CartService
+from ..domain.exceptions import OrderNotFound, OrderCancellationError, CartItemNotFound, CartValidationError
+from ..services.cart_service import CartService
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

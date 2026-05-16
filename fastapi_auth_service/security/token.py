@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, UTC
 from jwt import encode, decode, PyJWTError
 from fastapi import HTTPException
 
-from core.config import settings
-from security.login_schemas import TokenClaims, LoginResponse
+from ..core.config import settings
+from .login_schemas import TokenClaims, LoginResponse
 
 
 def generate_login_response(user_id: int) -> LoginResponse:

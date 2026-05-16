@@ -1,9 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from user_module.user import User
+from .user import User
 from typing import Optional
-
-from user_module.user_schemas import UserUpdateRequest
 
 
 class UserRepository:

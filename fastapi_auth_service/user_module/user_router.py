@@ -1,17 +1,22 @@
 from fastapi import APIRouter, status, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.logger import logger
-from user_module.user_repository import UserRepository
-from user_module.user_service import UserService
-from user_module.user_schemas import UserRequest, UserResponse
-from security.login_schemas import LoginRequest, LoginResponse
-from core.database import get_async_session
-from security.dependencies import get_current_user
+from ..core.logger import logger
+from .user_repository import UserRepository
+from .user_service import UserService
+from .user_schemas import UserRequest, UserResponse
+from ..security.login_schemas import LoginRequest, LoginResponse
+from ..core.database import get_async_session
+from ..security.dependencies import get_current_user
 
-from security.login_schemas import TokenClaims
-from user_module.notifications import send_registration_email, send_security_alert, \
-    send_cart_notification, send_order_cancel
-from user_module.user_schemas import OrderCancelNotification, CartNotification
+from ..security.login_schemas import TokenClaims
+from .notifications import (
+    send_registration_email,
+    send_security_alert,
+    send_cart_notification,
+    send_order_cancel
+)
+
+from .user_schemas import OrderCancelNotification, CartNotification
 
 from fastapi_auth_service.user_module.user_schemas import UserUpdateRequest
 

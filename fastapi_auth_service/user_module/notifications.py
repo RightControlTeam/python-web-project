@@ -1,4 +1,4 @@
-from core.logger import logger
+from ..core.logger import logger
 
 def send_registration_email(username: str):
     logger.info(f" Письмо отправлено Привет, {username}! Добро пожаловать в наш магазин ")

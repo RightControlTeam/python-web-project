@@ -1,6 +1,6 @@
-from user_module.user_schemas import UserResponse, UserRequest
-from user_module.user import User
-from security.password_hashing import hash_password
+from .user_schemas import UserResponse, UserRequest
+from .user import User
+from ..security.password_hashing import hash_password
 
 
 def user_from_request(request: UserRequest) -> User:
