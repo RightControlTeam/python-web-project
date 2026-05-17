@@ -1,14 +1,14 @@
 from fastapi import APIRouter, status, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi_auth_service.core.logger import logger
-from fastapi_auth_service.user_module.user_repository import UserRepository
-from fastapi_auth_service.user_module.user_service import UserService
-from fastapi_auth_service.user_module.user_schemas import UserRequest, UserResponse
-from fastapi_auth_service.security.login_schemas import LoginRequest, LoginResponse
-from fastapi_auth_service.core.database import get_async_session
-from fastapi_auth_service.security.dependencies import get_current_user
-from fastapi_auth_service.security.login_schemas import TokenClaims
+from transaction_service.core.logger import logger
+from transaction_service.user_module.user_repository import UserRepository
+from transaction_service.user_module.user_service import UserService
+from transaction_service.user_module.user_schemas import UserRequest, UserResponse
+from transaction_service.security.login_schemas import LoginRequest, LoginResponse
+from transaction_service.core.database import get_async_session
+from transaction_service.security.dependencies import get_current_user
+from transaction_service.security.login_schemas import TokenClaims
 
 from .notifications import (
     send_registration_email,
@@ -19,7 +19,7 @@ from .notifications import (
 
 from .user_schemas import OrderCancelNotification, CartNotification
 
-from fastapi_auth_service.user_module.user_schemas import UserUpdateRequest
+from transaction_service.user_module.user_schemas import UserUpdateRequest
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 

@@ -1,5 +1,3 @@
-#user/models.py
-
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -21,6 +19,7 @@ class MyUserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, unique=True)
+    balance = models.IntegerField(default=10000)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

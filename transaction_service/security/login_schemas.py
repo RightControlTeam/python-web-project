@@ -9,6 +9,3 @@ class LoginResponse(BaseModel):
     token_type: str
     expires_in: int
 
-class TokenClaims(BaseModel):
-    sub: str
-    exp: int

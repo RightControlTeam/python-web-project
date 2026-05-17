@@ -10,6 +10,6 @@ app = FastAPI()
 app.include_router(user_router)
 
 if __name__ == "__main__":
-    parsed_url = urlparse(settings.FASTAPI_AUTH_URL)
+    parsed_url = urlparse(settings.TRANSACTION_SERVICE_URL)
     run(app, host=parsed_url.hostname, port=parsed_url.port)
 
