@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     JWT_EXP_MINS: int = 30
 
     DJANGO_BACKEND_URL: str
-    FASTAPI_AUTH_URL: str
+    TRANSACTION_SERVICE_URL: str
     REVIEW_SERVICE_URL: str
 
 settings = Settings()

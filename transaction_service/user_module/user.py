@@ -1,7 +1,7 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fastapi_auth_service.core.database import Base
+from transaction_service.core.database import Base
 
 
 class User(Base):
