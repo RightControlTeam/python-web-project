@@ -5,7 +5,7 @@ from transaction_service.user_module.user_repository import UserRepository
 from transaction_service.user_module.user_schemas import UserRequest, UserResponse, UserUpdateRequest
 from transaction_service.security.login_schemas import LoginRequest, LoginResponse
 from transaction_service.security.password_hashing import verify_password
-from transaction_service.security.token import generate_login_response
+from transaction_service.security.login_response import generate_login_response
 from transaction_service.user_module.user import User
 from transaction_service.user_module.user_mapper import user_to_response, user_from_request
 from transaction_service.security.password_hashing import hash_password
