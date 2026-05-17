@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from store.models import Product, Category, CartItem, Order, OrderItem
+from django_backend.store.models import Product, Category, CartItem, Order, OrderItem
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

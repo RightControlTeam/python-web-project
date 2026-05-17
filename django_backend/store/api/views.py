@@ -1,5 +1,3 @@
-from urllib import response
-
 import httpx
 import logging
 from asgiref.sync import sync_to_async
@@ -7,24 +5,36 @@ from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, filters, status
+from rest_framework import viewsets, permissions, status
 
-from store.models import Category, Product, CartItem, Order
-from store.api.serializers import CategorySerializer, ProductSerializer, CartItemSerializer, OrderSerializer
-from store.services.order_service import OrderService
-from store.services.product_service import ProductService
+from django_backend.store.models import Category, Product, CartItem, Order
 
-logger = logging.getLogger(__name__)
+from django_backend.store.services.order_service import OrderService
+from django_backend.store.services.product_service import ProductService
+from django_backend.store.services.cart_service import CartService
 
-from store.domain.exceptions import (
+
+from django_backend.store.api.serializers import (
+    CategorySerializer,
+    ProductSerializer,
+    CartItemSerializer,
+    OrderSerializer
+)
+
+from django_backend.store.domain.exceptions import (
     ProductNotFound,
     ProductValidationError,
     ProductAlreadyExists,
-    ProductCategoryNotFound
+    ProductCategoryNotFound,
+    OrderNotFound,
+    OrderCancellationError,
+    CartItemNotFound,
+    CartValidationError
 )
 
-from store.domain.exceptions import OrderNotFound, OrderCancellationError, CartItemNotFound, CartValidationError
-from store.services.cart_service import CartService
+
+
+logger = logging.getLogger(__name__)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

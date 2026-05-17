@@ -2,7 +2,7 @@
 
 from rest_framework.exceptions import PermissionDenied
 from django.db import models
-from users.models import User
+from django_backend.users.models import User
 
 
 class Category(models.Model):

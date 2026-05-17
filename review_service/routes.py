@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import app
 from jwt_decoding import decode_jwt
-from review_service import ReviewService
+from .review_service import ReviewService
 from schemas import ReviewCreateRequest, ReviewUpdateRequest
 from pydantic import ValidationError
 from functools import wraps

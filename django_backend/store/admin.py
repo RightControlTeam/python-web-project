@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
-from .models import Category, Product, CartItem, Order, OrderItem
+from django_backend.store.models import Category, Product, CartItem, Order, OrderItem
 
 
 admin.site.register(Category)

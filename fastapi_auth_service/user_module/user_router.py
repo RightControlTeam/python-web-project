@@ -1,17 +1,23 @@
 from fastapi import APIRouter, status, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.logger import logger
-from user_module.user_repository import UserRepository
-from user_module.user_service import UserService
-from user_module.user_schemas import UserRequest, UserResponse
-from security.login_schemas import LoginRequest, LoginResponse
-from core.database import get_async_session
-from security.dependencies import get_current_user
 
-from security.login_schemas import TokenClaims
-from user_module.notifications import send_registration_email, send_security_alert, \
-    send_cart_notification, send_order_cancel
-from user_module.user_schemas import OrderCancelNotification, CartNotification
+from fastapi_auth_service.core.logger import logger
+from fastapi_auth_service.user_module.user_repository import UserRepository
+from fastapi_auth_service.user_module.user_service import UserService
+from fastapi_auth_service.user_module.user_schemas import UserRequest, UserResponse
+from fastapi_auth_service.security.login_schemas import LoginRequest, LoginResponse
+from fastapi_auth_service.core.database import get_async_session
+from fastapi_auth_service.security.dependencies import get_current_user
+from fastapi_auth_service.security.login_schemas import TokenClaims
+
+from .notifications import (
+    send_registration_email,
+    send_security_alert,
+    send_cart_notification,
+    send_order_cancel
+)
+
+from .user_schemas import OrderCancelNotification, CartNotification
 
 from fastapi_auth_service.user_module.user_schemas import UserUpdateRequest
 
@@ -63,7 +69,10 @@ async def get_range(
     return await service.get_range(db, offset, limit)
 
 
-@user_router.post(path="/login/")
+@user_router.post(
+    path="/login/",
+    response_model=LoginResponse
+)
 async def login(
     request: LoginRequest,
     background_tasks: BackgroundTasks,

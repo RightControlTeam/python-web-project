@@ -1,8 +1,8 @@
-from store.models import CartItem, Product
-from users.models import User
+from django_backend.store.models import CartItem, Product
+from django_backend.users.models import User
 from django.db import transaction
 from django.db.models import F, Sum
-from store.domain.exceptions import ProductNotFound, CartItemNotFound, CartValidationError
+from django_backend.store.domain.exceptions import ProductNotFound, CartItemNotFound, CartValidationError
 import logging
 
 logger = logging.getLogger(__name__)
