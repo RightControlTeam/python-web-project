@@ -8,7 +8,7 @@ from transaction_service.user_module.user_schemas import UserRequest, UserRespon
 from transaction_service.security.login_schemas import LoginRequest, LoginResponse
 from transaction_service.core.database import get_async_session
 from transaction_service.security.dependencies import get_current_user
-from transaction_service.security.login_schemas import TokenClaims
+from shared.jwt_module import TokenClaims
 
 from .notifications import (
     send_registration_email,

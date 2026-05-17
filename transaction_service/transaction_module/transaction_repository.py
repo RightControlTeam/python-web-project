@@ -10,13 +10,17 @@ class TransactionRepository:
         result = await db.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_order_id(self, db: AsyncSession, order_id: int) -> list[Transaction]:
-        query = select(Transaction).filter_by(order_id=order_id)
-        result = await db.execute(query)
-        return list(result.scalars().all())
-
-    async def get_range(self, db: AsyncSession, offset: int = 0, limit: int = 10) -> list[Transaction]:
-        query = select(Transaction).offset(offset).limit(limit)
+    async def get_range(
+        self,
+        db: AsyncSession,
+        offset: int = 0,
+        limit: int = 10,
+        order_id: int = None
+    ) -> list[Transaction]:
+        query = select(Transaction)
+        if order_id is not None:
+            query = query.filter_by(order_id=order_id)
+        query = query.offset(offset).limit(limit)
         result = await db.execute(query)
         return list(result.scalars().all())
 
