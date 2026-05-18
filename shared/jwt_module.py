@@ -1,5 +1,4 @@
-import jwt
-from jwt import decode, PyJWTError
+from jwt import decode, PyJWTError, encode
 from shared.config import settings
 from pydantic import BaseModel
 
@@ -21,7 +20,7 @@ def decode_jwt(token: str) -> TokenClaims | None:
 def create_jwt(claims: TokenClaims | None) -> str | None:
     if not claims:
         return None
-    return jwt.encode(
+    return encode(
         claims.model_dump(),
         settings.JWT_SECRET_KEY,
         settings.JWT_ALGORITHM
