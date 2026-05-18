@@ -30,14 +30,6 @@ class TransactionManager:
             is_success = response.status_code == 200
         )
 
-        if response.status_code == 200:
-            async with httpx.AsyncClient() as client:
-                await client.patch(
-                    f"{DJANGO_URL}/api/store/order/{request.order_id}/",
-                    json={"status": "paid"},
-                    headers={"Authorization": auth}
-                )
-
         return await TransactionRepository.create(db, new_tr)
 
     @staticmethod
@@ -49,6 +41,7 @@ class TransactionManager:
             db: AsyncSession,
             offset: int = 0,
             limit: int = 10,
-            order_id: int = None
+            order_id: int = None,
+            user_id: int = None
     ) -> list[Transaction]:
-        return await TransactionRepository.get_range(db, offset, limit, order_id)
+        return await TransactionRepository.get_range(db, offset, limit, order_id, user_id)
