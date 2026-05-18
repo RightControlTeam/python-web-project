@@ -6,6 +6,8 @@ from transaction_service.transaction_module.transaction_repository import Transa
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
 from transaction_service.transaction_module.transaction import Transaction
 
+from shared.jwt_module import TokenClaims, decode_jwt
+
 from shared.config import settings
 
 DJANGO_URL = settings.DJANGO_BACKEND_URL
@@ -23,8 +25,10 @@ class TransactionManager:
                 headers={"Authorization": auth}
             )
 
+        claims: TokenClaims = decode_jwt(auth.replace("Bearer ", ""))
+
         new_tr: Transaction = Transaction(
-            user_id = request.user_id,
+            user_id = int(claims.sub),
             order_id = request.order_id,
             cost = request.cost,
             is_success = response.status_code == 200
