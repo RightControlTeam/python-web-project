@@ -5,9 +5,13 @@ from transaction_service.transaction_module.transaction_repository import Transa
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
 from transaction_service.transaction_module.transaction import Transaction
 
+from shared.config import settings
+
+DJANGO_URL = settings.DJANGO_BACKEND_URL
+
 class TransactionManager:
     @staticmethod
-    async def create( db: AsyncSession, request: CreateTransactionRequest) -> Optional[Transaction]:
+    async def create( db: AsyncSession, request: CreateTransactionRequest, user_id: int) -> Optional[Transaction]:
         new_tr: Transaction = Transaction(
             user_id = request.user_id,
             order_id = request.order_id,

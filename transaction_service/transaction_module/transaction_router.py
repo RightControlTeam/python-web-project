@@ -20,9 +20,10 @@ transaction_router = APIRouter(prefix="/transactions", tags=["transactions"])
 async def create_transaction(
     request: CreateTransactionRequest,
     db: AsyncSession = Depends(get_async_session),
-    _: TokenClaims = Depends(get_current_user)
+    claims: TokenClaims = Depends(get_current_user)
 ):
-    return await TransactionManager.create(db, request)
+    return await TransactionManager.create(db, request, int(claims.sub))
+
 
 
 @transaction_router.get(
