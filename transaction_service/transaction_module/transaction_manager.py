@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-import httpx
+from fastapi import HTTPException
+from httpx import AsyncClient
 
 from transaction_service.transaction_module.transaction_repository import TransactionRepository
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
@@ -15,7 +16,7 @@ DJANGO_URL = settings.DJANGO_BACKEND_URL
 class TransactionManager:
     @staticmethod
     async def create( db: AsyncSession, request: CreateTransactionRequest, auth: str) -> Optional[Transaction]:
-        async with httpx.AsyncClient() as client:
+        async with AsyncClient() as client:
             response = await client.post(
                 f"{DJANGO_URL}/api/users/balance/transaction/",
                 json={
@@ -26,6 +27,8 @@ class TransactionManager:
             )
 
         claims: TokenClaims = decode_jwt(auth.replace("Bearer ", ""))
+        if claims is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
 
         new_tr: Transaction = Transaction(
             user_id = int(claims.sub),
