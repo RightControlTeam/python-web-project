@@ -1,10 +1,9 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.jwt_module import TokenClaims
 
 from transaction_service.core.database import get_async_session
-from transaction_service.security.dependencies import get_current_user
 from transaction_service.transaction_module.transaction import Transaction
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
 from  transaction_service.transaction_module.transaction_manager import TransactionManager
@@ -20,9 +19,9 @@ transaction_router = APIRouter(prefix="/transactions", tags=["transactions"])
 async def create_transaction(
     request: CreateTransactionRequest,
     db: AsyncSession = Depends(get_async_session),
-    claims: TokenClaims = Depends(get_current_user)
+    authorization: str = Header(...)
 ):
-    return await TransactionManager.create(db, request, int(claims.sub))
+    return await TransactionManager.create(db, request, authorization)
 
 
 

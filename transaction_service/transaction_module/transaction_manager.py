@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
+import httpx
 
 from transaction_service.transaction_module.transaction_repository import TransactionRepository
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
@@ -11,14 +12,32 @@ DJANGO_URL = settings.DJANGO_BACKEND_URL
 
 class TransactionManager:
     @staticmethod
-    async def create( db: AsyncSession, request: CreateTransactionRequest, user_id: int) -> Optional[Transaction]:
+    async def create( db: AsyncSession, request: CreateTransactionRequest, auth: str) -> Optional[Transaction]:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{DJANGO_URL}/api/users/balance/transaction/",
+                json={
+                    "amount": -request.cost,
+                    "order_id": request.order_id
+                },
+                headers={"Authorization": auth}
+            )
+
         new_tr: Transaction = Transaction(
             user_id = request.user_id,
             order_id = request.order_id,
             cost = request.cost,
-            is_success = True # need to check
+            is_success = response.status_code == 200
         )
-        #need to apply payment to uer if success
+
+        if response.status_code == 200:
+            async with httpx.AsyncClient() as client:
+                await client.patch(
+                    f"{DJANGO_URL}/api/store/order/{request.order_id}/",
+                    json={"status": "paid"},
+                    headers={"Authorization": auth}
+                )
+
         return await TransactionRepository.create(db, new_tr)
 
     @staticmethod
