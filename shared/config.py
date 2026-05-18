@@ -22,5 +22,6 @@ class Settings(BaseSettings):
     DJANGO_BACKEND_URL: str
     TRANSACTION_SERVICE_URL: str
     REVIEW_SERVICE_URL: str
+    DJANGO_SECRET_KEY: str
 
 settings = Settings()
