@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from uvicorn import run
 
-from user_module.user_router import user_router
 from shared.config import settings
 from urllib.parse import urlparse
+from transaction_service.transaction_module.transaction_router import transaction_router
 
 app = FastAPI()
 
-app.include_router(user_router)
+app.include_router(transaction_router)
+
 
 if __name__ == "__main__":
     parsed_url = urlparse(settings.TRANSACTION_SERVICE_URL)

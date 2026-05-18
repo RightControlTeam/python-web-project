@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-load_dotenv()
+load_dotenv(BASE_DIR.parent / 'shared/.env')
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
@@ -146,3 +146,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'users.User'
+
+# JWT Settings (из общего .env)
+JWT_SECRET_KEY = settings.JWT_SECRET_KEY
+JWT_ALGORITHM = settings.JWT_ALGORITHM
+JWT_EXP_MINS = settings.JWT_EXP_MINS

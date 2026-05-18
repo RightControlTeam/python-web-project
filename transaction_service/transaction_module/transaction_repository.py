@@ -9,6 +9,21 @@ class TransactionRepository:
         query = select(Transaction).filter_by(id=tr_id)
         result = await db.execute(query)
         return result.scalar_one_or_none()
+    
+    async def get_by_user_id(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        offset: int = 0,
+        limit: int = 10,
+        order_id: int = None
+    ) -> list[Transaction]:
+        query = select(Transaction).filter_by(user_id=user_id)
+        if order_id is not None:
+            query = query.filter_by(order_id=order_id)
+        query = query.offset(offset).limit(limit)
+        result = await db.execute(query)
+        return list(result.scalars().all())
 
     async def get_range(
         self,
