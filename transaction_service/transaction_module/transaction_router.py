@@ -1,13 +1,14 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from transaction_service.core.database import get_async_session
-from transaction_service.security.dependencies import get_current_user
 from shared.jwt_module import TokenClaims
 
+from transaction_service.core.database import get_async_session
 from transaction_service.transaction_module.transaction import Transaction
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest, TransactionResponse
 from transaction_service.transaction_module.transaction_repository import TransactionRepository
+from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
+from  transaction_service.transaction_module.transaction_manager import TransactionManager
 
 transaction_router = APIRouter(prefix="/transactions", tags=["transactions"])
 transaction_repo = TransactionRepository()
@@ -21,7 +22,7 @@ transaction_repo = TransactionRepository()
 async def create_transaction(
     request: CreateTransactionRequest,
     db: AsyncSession = Depends(get_async_session),
-    current_user: TokenClaims = Depends(get_current_user)
+    authorization: str = Header(...)
 ):
     user_id_from_token = int(current_user.sub)
     
@@ -41,6 +42,9 @@ async def create_transaction(
         cost=created.cost,
         is_success=created.is_success
     )
+    return await TransactionManager.create(db, request, authorization)
+
+
 
 @transaction_router.get(
     path="/{transaction_id}",
@@ -66,6 +70,8 @@ async def get_by_id(
         cost=transaction.cost,
         is_success=transaction.is_success
     )
+    return await TransactionManager.get_by_id(db, transaction_id)
+
 
 @transaction_router.get(
     path="/",
@@ -97,6 +103,9 @@ async def get_range(
             is_success=t.is_success
         ) for t in transactions
     ]
+    db: AsyncSession = Depends(get_async_session)
+):
+    return await TransactionManager.get_range(db, offset, limit, order_id)
 
 
 

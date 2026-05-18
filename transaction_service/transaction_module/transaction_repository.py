@@ -5,7 +5,8 @@ from typing import Optional
 
 
 class TransactionRepository:
-    async def get_by_id(self, db: AsyncSession, tr_id: int) -> Optional[Transaction]:
+    @staticmethod
+    async def get_by_id(db: AsyncSession, tr_id: int) -> Optional[Transaction]:
         query = select(Transaction).filter_by(id=tr_id)
         result = await db.execute(query)
         return result.scalar_one_or_none()
@@ -25,8 +26,8 @@ class TransactionRepository:
         result = await db.execute(query)
         return list(result.scalars().all())
 
+    @staticmethod
     async def get_range(
-        self,
         db: AsyncSession,
         offset: int = 0,
         limit: int = 10,
@@ -39,8 +40,8 @@ class TransactionRepository:
         result = await db.execute(query)
         return list(result.scalars().all())
 
-
-    async def create(self, db: AsyncSession, new_tr: Transaction) -> Transaction:
+    @staticmethod
+    async def create(db: AsyncSession, new_tr: Transaction) -> Transaction:
         db.add(new_tr)
         await db.commit()
         await db.refresh(new_tr)
