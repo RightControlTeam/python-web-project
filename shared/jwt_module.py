@@ -1,6 +1,6 @@
 import jwt
 from jwt import decode, PyJWTError
-from config import settings
+from shared.config import settings
 from pydantic import BaseModel
 
 class TokenClaims(BaseModel):
