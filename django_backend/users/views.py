@@ -1,7 +1,10 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
+from sqlalchemy.sql.functions import user
+
 from .models import User
 from .jwt_utils import generate_token
 import logging
@@ -140,3 +143,27 @@ def delete_me(request):
         return Response({'message': 'User deleted'}, status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_balance(request):
+    amount = request.data.get('amount')
+    order_id = request.data.get('order_id')
+    user = request.user
+    if not amount:
+        return Response({'error': 'Amount required'}, status=status.HTTP_400_BAD_REQUEST)
+    new_balance = user.balance + amount
+    if new_balance < 0:
+        return Response({'error': 'Balance cannot be negative'}, status=status.HTTP_400_BAD_REQUEST)
+    user.balance = new_balance
+    user.save()
+    return Response({
+        'user_id': user.id,
+        'balance': user.balance,
+        'order_id': order_id
+        },
+        status=status.HTTP_200_OK
+    )
+
+
