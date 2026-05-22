@@ -19,14 +19,9 @@
 ├── shared/ # Общие настройки и утилиты  
 
 ## Запуск проекта
-1. Скопируйте `.env.example` в `.env` для каждого сервиса:
-   - `django_backend/.env.example` → `django_backend/.env`
-   - `review_service/.env.example` → `review_service/.env`
-   - `transaction_module/.env.example` → `transaction_module/.env`
-   - `shared/.env.example` → `shared/.env`
-
+1. Скопируйте `shared/.env.example` в `shared/.env`
 2. При необходимости отредактируйте переменные в `.env` (порты, ключи, БД)
-3. Запустить каждый сервис по очереди (через PyCharm -> run -> current file)
+3. Запустите каждый сервис по очереди (через PyCharm -> run -> current file)
     - **Django**  
       открыть файл django_backend/manage.py -> run -> current file
     - **FastAPI**   
