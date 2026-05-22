@@ -21,7 +21,10 @@
 ## Запуск проекта
 1. Скопируйте `shared/.env.example` в `shared/.env`
 2. При необходимости отредактируйте переменные в `.env` (порты, ключи, БД)
-3. Запустите каждый сервис по очереди (через PyCharm -> run -> current file)
+3. Примените миграции  
+   `cd django_backend`  
+   `python manage.py migrate`
+4. Запустите каждый сервис по очереди (через PyCharm -> run -> current file)
     - **Django**  
       открыть файл django_backend/manage.py -> run -> current file
     - **FastAPI**   
