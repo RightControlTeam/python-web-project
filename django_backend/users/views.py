@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate
 from sqlalchemy.sql.functions import user
 
 from .models import User
-from .jwt_utils import generate_token
+from .jwt_utils import generate_token, decode_token
 import logging
 from .notifications import send_registration_email, send_security_alert
 
@@ -165,5 +165,4 @@ def change_balance(request):
         },
         status=status.HTTP_200_OK
     )
-
 

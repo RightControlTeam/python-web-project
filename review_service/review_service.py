@@ -4,12 +4,13 @@ from database import db
 from review_service.review_repository import ReviewRepository
 from schemas import ReviewCreateRequest, ReviewUpdateRequest
 import httpx
+from shared.config import settings
 
 # где-то тут надо будет добавить проверку существования пользователей и товаров
 # обращением к другим сервисам
 
 class ReviewService:
-    DJANGO_API_URL = "http://localhost:8080/api/product/"
+    DJANGO_API_URL = f"{settings.DJANGO_BACKEND_URL}/api/product/"
 
     @staticmethod
     async def verify_product_exists(product_id: int) -> bool:
@@ -20,20 +21,10 @@ class ReviewService:
             except httpx.RequestError:
                 return False
 
-    @staticmethod
-    async def verify_user_exists(user_id: int) -> bool:
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(f"http://localhost:8001/users/{user_id}/", timeout=5)
-                return response.status_code == 200
-        except httpx.RequestError:
-            return False
 
     @staticmethod
     async def create(request: ReviewCreateRequest, user_id: int) -> Optional[Review]:
         if not await ReviewService.verify_product_exists(request.product_id):
-            return None
-        if not await ReviewService.verify_user_exists(user_id):
             return None
 
         new_review = Review(

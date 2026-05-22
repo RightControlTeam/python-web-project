@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+from urllib.parse import urlparse
 import os
 import sys
-
-import os
-import sys
+from shared.config import settings
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
@@ -13,6 +12,11 @@ if BASE_DIR not in sys.path:
 
 def main():
     """Run administrative tasks."""
+    django_url = settings.DJANGO_BACKEND_URL
+    parsed_url = urlparse(django_url)
+    port = parsed_url.port or 8000
+    host = parsed_url.hostname or '127.0.0.1'
+    sys.argv = ['manage.py', 'runserver', f'{host}:{port}']
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line

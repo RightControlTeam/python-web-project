@@ -1,5 +1,6 @@
 import httpx
 import logging
+from shared.config import settings
 from asgiref.sync import sync_to_async
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -307,7 +308,7 @@ async def add_to_cart_view(request, product_id):
         async with httpx.AsyncClient() as client:
             try:
                 await client.post(
-                    "http://localhost:8000/users/internal/notify-cart/",
+                    f"{settings.TRANSACTION_SERVICE_URL}/internal/notify-cart/",
                     json={
                         "username": request.user.username,
                         "product_name": product.name
@@ -356,7 +357,7 @@ async def cancel_order_view(request, order_id):
         async with httpx.AsyncClient() as client:
             try:
                 await client.post(
-                    "http://localhost:8000/users/internal/notify-cancel-order/",
+                    f"{settings.TRANSACTION_SERVICE_URL}/internal/notify-cancel-order/",
                     json={"username": request.user.username, "order_id": order_id}
                 )
                 logger.info(f"Запрос на отмену заказа {order_id} передан в FastAPI")
