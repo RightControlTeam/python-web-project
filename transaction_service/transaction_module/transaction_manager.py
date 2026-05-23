@@ -6,6 +6,7 @@ from httpx import AsyncClient
 from transaction_service.transaction_module.transaction_repository import TransactionRepository
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest
 from transaction_service.transaction_module.transaction import Transaction
+from transaction_service.core.logger import logger
 
 from shared.jwt_module import TokenClaims, decode_jwt
 
@@ -16,6 +17,13 @@ DJANGO_URL = settings.DJANGO_BACKEND_URL
 class TransactionManager:
     @staticmethod
     async def create( db: AsyncSession, request: CreateTransactionRequest, auth: str) -> Optional[Transaction]:
+        logger.info(f"Transaction request: order_id={request.order_id}, cost={request.cost}")
+
+        claims: TokenClaims = decode_jwt(auth.replace("Bearer ", ""))
+        if claims is None:
+            logger.error(f"Invalid token. order_id={request.order_id}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+
         async with AsyncClient() as client:
             response = await client.post(
                 f"{DJANGO_URL}/api/users/balance/transaction/",
@@ -26,9 +34,10 @@ class TransactionManager:
                 headers={"Authorization": auth}
             )
 
-        claims: TokenClaims = decode_jwt(auth.replace("Bearer ", ""))
-        if claims is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+        if response.status_code == 200:
+            logger.info(f"Django API success. order_id={request.order_id}")
+        else:
+            logger.warning(f"Django API failed. order_id={request.order_id}, status={response.status_code}")
 
         new_tr: Transaction = Transaction(
             user_id = int(claims.sub),
@@ -36,8 +45,9 @@ class TransactionManager:
             cost = request.cost,
             is_success = response.status_code == 200
         )
-
-        return await TransactionRepository.create(db, new_tr)
+        result = await TransactionRepository.create(db, new_tr)
+        logger.info(f"Transaction created. order_id={request.order_id}")
+        return result
 
     @staticmethod
     async def get_by_id(db: AsyncSession, tr_id: int) -> Transaction:
