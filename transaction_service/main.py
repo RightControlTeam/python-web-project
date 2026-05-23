@@ -7,6 +7,10 @@ from transaction_service.transaction_module.transaction_router import transactio
 
 app = FastAPI()
 
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "transaction"}
+
 app.include_router(transaction_router)
 
 

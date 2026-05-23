@@ -12,9 +12,37 @@ from shared.jwt_module import TokenClaims, decode_jwt
 
 from shared.config import settings
 
+import asyncio
+
 DJANGO_URL = settings.DJANGO_BACKEND_URL
 
+
+
 class TransactionManager:
+    @staticmethod
+    async def _notify(transaction: Transaction):
+        if transaction.is_success:
+            message = f"Transaction {transaction.id}: Payment succeeded. Cost: {transaction.cost}"
+        else:
+            message = f"Transaction {transaction.id}: Payment failed. Cost: {transaction.cost}"
+
+        async with AsyncClient(timeout=5.0) as client:
+            await client.post(
+                f"{DJANGO_URL}/api/orders/transaction-notify/",
+                json={
+                    "transaction_id": transaction.id,
+                    "order_id": transaction.order_id,
+                    "user_id": transaction.user_id,
+                    "success": transaction.is_success,
+                    "cost": transaction.cost,
+                    "message": message
+                },
+                headers={
+                    "X-Notification-Key": settings.NOTIFICATION_KEY
+                }
+            )
+
+
     @staticmethod
     async def create( db: AsyncSession, request: CreateTransactionRequest, auth: str) -> Optional[Transaction]:
         logger.info(f"Transaction request: order_id={request.order_id}, cost={request.cost}")
@@ -24,7 +52,7 @@ class TransactionManager:
             logger.error(f"Invalid token. order_id={request.order_id}")
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=10) as client:
             response = await client.post(
                 f"{DJANGO_URL}/api/users/balance/transaction/",
                 json={
@@ -47,6 +75,8 @@ class TransactionManager:
         )
         result = await TransactionRepository.create(db, new_tr)
         logger.info(f"Transaction created. order_id={request.order_id}")
+
+        asyncio.create_task(TransactionManager._notify(result))
         return result
 
     @staticmethod

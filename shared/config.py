@@ -24,4 +24,6 @@ class Settings(BaseSettings):
     REVIEW_SERVICE_URL: str
     DJANGO_SECRET_KEY: str
 
+    NOTIFICATION_KEY: str
+
 settings = Settings()
