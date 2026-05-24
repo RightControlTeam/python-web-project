@@ -26,7 +26,7 @@ class TransactionManager:
 
         async with AsyncClient(timeout=5.0) as client:
             await client.post(
-                f"{DJANGO_URL}/api/notifications/",
+                f"{DJANGO_URL}/api/notifications/transaction-notify/",
                 json={
                     "transaction_id": transaction.id,
                     "order_id": transaction.order_id,
