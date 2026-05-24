@@ -12,6 +12,9 @@ DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(DIR))
 
 from transaction_service.core.database import Base
+from transaction_service.transaction_module.transaction import Transaction
+
+
 from shared.config import settings
 
 DB_URL = settings.FASTAPI_DATABASE_URL
