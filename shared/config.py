@@ -26,5 +26,6 @@ class Settings(BaseSettings):
 
     NOTIFICATION_KEY: str
     DEBUG: bool = True
+    ALLOWED_HOSTS: str = "127.0.0.1,localhost"
 
 settings = Settings()
