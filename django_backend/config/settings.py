@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'django_backend.users',
     'django_backend.store',
+    'django_backend.notifications',
     'rest_framework'
 ]
 
