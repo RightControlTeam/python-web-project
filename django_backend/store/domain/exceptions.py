@@ -26,4 +26,13 @@ class CartItemNotFound(Exception):
 
 class CartValidationError(Exception):
     pass
+
+class BalanceError(Exception):
+    pass
+
+class TokenNotFound(Exception):
+    pass
+
+class TransactionError(Exception):
+    pass
 #endregion

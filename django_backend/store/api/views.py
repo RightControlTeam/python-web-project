@@ -1,7 +1,7 @@
 import httpx
 import logging
 from shared.config import settings
-from asgiref.sync import sync_to_async
+import requests
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
@@ -30,7 +30,7 @@ from django_backend.store.domain.exceptions import (
     OrderNotFound,
     OrderCancellationError,
     CartItemNotFound,
-    CartValidationError
+    CartValidationError, TransactionError, TokenNotFound, BalanceError, EmptyCartError
 )
 
 
@@ -298,25 +298,24 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
 
 
-async def add_to_cart_view(request, product_id):
+def add_to_cart_view(request, product_id):
     try:
-        cart_item, product = await sync_to_async(CartService.add_product_to_cart)(
+        cart_item, product = CartService.add_product_to_cart(
             user=request.user,
             product_id=product_id
         )
 
-        async with httpx.AsyncClient() as client:
-            try:
-                await client.post(
-                    f"{settings.TRANSACTION_SERVICE_URL}/internal/notify-cart/",
-                    json={
-                        "username": request.user.username,
-                        "product_name": product.name
-                    }
-                )
-                logger.info(f"Уведомление о корзине отправлено")
-            except httpx.RequestError as e:
-                logger.error(f"Ошибка HTTP при уведомлении FastAPI {e}")
+        try:
+            requests.post(
+            f"{settings.TRANSACTION_SERVICE_URL}/internal/notify-cart/",
+            json={
+                "username": request.user.username,
+                "product_name": product.name
+            }
+            )
+            logger.info(f"Уведомление о корзине отправлено")
+        except requests.RequestException as e:
+            logger.error(f"Ошибка HTTP при уведомлении FastAPI {e}")
 
         return JsonResponse({"status": "success"})
     except Exception as ex:
@@ -343,26 +342,38 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            order = OrderService.create_order(request.user)
+            auth_header = request.headers.get('Authorization')
+            auth_token = None
+            if auth_header and auth_header.startswith('Bearer '):
+                auth_token = auth_header.split(' ')[1]
+            order = OrderService.create_order(request.user, auth_token)
             serializer = self.get_serializer(order)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except EmptyCartError as e:
+            return Response({"detail": str(e)}, status=400)
+        except BalanceError as e:
+            return Response({"detail": str(e)}, status=402)
+        except TokenNotFound as e:
+            return Response({"detail": str(e)}, status=401)
+        except TransactionError as e:
+            return Response({"detail": str(e)}, status=400)
         except Exception as e:
-            raise e
+            logger.error(f"Unexpected error: {e}")
+            return Response({"detail": str(e)}, status=500)
 
 
-async def cancel_order_view(request, order_id):
+def cancel_order_view(request, order_id):
     try:
-        order = await sync_to_async(OrderService.cancel_order)(order_id)
+        order = OrderService.cancel_order(order_id)
 
-        async with httpx.AsyncClient() as client:
-            try:
-                await client.post(
-                    f"{settings.TRANSACTION_SERVICE_URL}/internal/notify-cancel-order/",
-                    json={"username": request.user.username, "order_id": order_id}
-                )
-                logger.info(f"Запрос на отмену заказа {order_id} передан в FastAPI")
-            except httpx.RequestError as ex:
-                logger.error(f"Не удалось отправить уведомление об отмене заказа {order_id} в FastAPI {ex}")
+        try:
+            requests.post(
+                f"{settings.TRANSACTION_SERVICE_URL}/internal/notify-cancel-order/",
+                json={"username": request.user.username, "order_id": order_id}
+            )
+            logger.info(f"Запрос на отмену заказа {order_id} передан в FastAPI")
+        except requests.RequestException as ex:
+            logger.error(f"Не удалось отправить уведомление об отмене заказа {order_id} в FastAPI {ex}")
 
         return JsonResponse({"status": "success", "message": f"Заказ {order_id} отменен"})
 
