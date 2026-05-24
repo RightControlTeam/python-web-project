@@ -1,4 +1,3 @@
-import httpx
 import logging
 from shared.config import settings
 import requests

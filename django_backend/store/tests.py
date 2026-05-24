@@ -1,4 +1,7 @@
-
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+django.setup()
 from django.test import TestCase
 from django_backend.users.models import User
 from django_backend.store.models import Category, Product, CartItem

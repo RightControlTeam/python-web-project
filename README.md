@@ -38,3 +38,6 @@
 ![img_1.png](img_1.png)
 ### FastAPI
 ![img_2.png](img_2.png)
+## Запуск тестов
+`cd django_backend`  
+`python manage.py test store`

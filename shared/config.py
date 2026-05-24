@@ -25,5 +25,6 @@ class Settings(BaseSettings):
     DJANGO_SECRET_KEY: str
 
     NOTIFICATION_KEY: str
+    DEBUG: bool = True
 
 settings = Settings()

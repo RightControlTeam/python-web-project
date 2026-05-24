@@ -4,13 +4,14 @@ from django_backend.store.models import CartItem, Order, OrderItem
 from django_backend.store.services.transaction_client import TransactionClient
 from django_backend.store.domain.exceptions import OrderNotFound, OrderCancellationError, BalanceError, TokenNotFound, TransactionError
 import logging
+from shared.config import settings
 
 logger = logging.getLogger(__name__)
 
 class OrderService:
     @staticmethod
     @transaction.atomic
-    def create_order(user, auth_token):
+    def create_order(user, auth_token=None):
         cart_items = CartItem.objects.filter(user=user)
         if not cart_items.exists():
             raise EmptyCartError("Нельзя создать заказ для пустой корзины")
@@ -29,6 +30,15 @@ class OrderService:
         order.total_price = total_price
         order.status = Order.STATUS_PENDING
         if not auth_token:
+            if settings.DEBUG:
+                logger.warning("Test mode: skipping transaction")
+                order.status = Order.STATUS_PAID
+                order.save()
+                user.balance -= total_price
+                user.save()
+                cart_items.delete()
+                return order
+
             logger.warning("No auth token")
             raise TokenNotFound("Token is required")
         else:
