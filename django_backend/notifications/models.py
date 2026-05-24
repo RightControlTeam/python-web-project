@@ -27,8 +27,8 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [models.Index(fields=['is_processed', '-created_at']),]
-        verbose_name = 'Уведомление'
-        verbose_name_plural = 'Уведомления'
+        verbose_name = 'notifications'
+        verbose_name_plural = 'notifications'
     
     def __str__(self):
         return f"Notification #{self.id} - {self.notification_type}"
