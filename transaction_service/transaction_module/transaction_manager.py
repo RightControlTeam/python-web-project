@@ -12,15 +12,13 @@ from shared.jwt_module import TokenClaims, decode_jwt
 
 from shared.config import settings
 
-import asyncio
-
 DJANGO_URL = settings.DJANGO_BACKEND_URL
 
 
 
 class TransactionManager:
     @staticmethod
-    async def _notify(transaction: Transaction):
+    async def notify(transaction: Transaction):
         if transaction.is_success:
             message = f"Transaction {transaction.id}: Payment succeeded. Cost: {transaction.cost}"
         else:
@@ -76,7 +74,6 @@ class TransactionManager:
         result = await TransactionRepository.create(db, new_tr)
         logger.info(f"Transaction created. order_id={request.order_id}")
 
-        asyncio.create_task(TransactionManager._notify(result))
         return result
 
     @staticmethod

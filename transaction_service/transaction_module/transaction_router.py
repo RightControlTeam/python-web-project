@@ -1,7 +1,8 @@
-from fastapi import APIRouter, status, Depends, Header, HTTPException
+from fastapi import APIRouter, status, Depends, Header, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from transaction_service.core.database import get_async_session
+from transaction_service.transaction_module.transaction import Transaction
 from transaction_service.transaction_module.transaction_schemas import CreateTransactionRequest, TransactionResponse
 from  transaction_service.transaction_module.transaction_manager import TransactionManager
 
@@ -15,10 +16,13 @@ transaction_router = APIRouter(prefix="/transactions", tags=["transactions"])
 )
 async def create_transaction(
     request: CreateTransactionRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_async_session),
     authorization: str = Header(...)
 ):
-    return await TransactionManager.create(db, request, authorization)
+    result: Transaction = await TransactionManager.create(db, request, authorization)
+    background_tasks.add_task(TransactionManager.notify, result)
+    return result
 
 
 

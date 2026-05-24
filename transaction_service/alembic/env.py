@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 import sys
 
-# Настройка путей, чтобы Python видел модули из корня проекта
 DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(DIR))
 
